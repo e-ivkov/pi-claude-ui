@@ -76,6 +76,8 @@ function formatCallLines(args: any, hasDiff: boolean): string[] {
 	}
 }
 
+const cap = (line: string) => (line.length > 200 ? `${line.slice(0, 199)}…` : line);
+
 export default function (pi: ExtensionAPI) {
 	// Claude Code-style prompt marker: "❯ " prefix on user messages
 	// (display-only; the model still sees the original text).
@@ -123,6 +125,17 @@ export default function (pi: ExtensionAPI) {
 					if (s) t += theme.fg("dim", ` (${s})`);
 					const streaming = oneLine(lastLine(textOf(result)), 70);
 					if (streaming) t += theme.fg("dim", ` ${streaming}`);
+
+					// ctrl+o while running: live tail of the streaming output
+					if (expanded) {
+						const lines = textOf(result).split("\n").filter((l: string) => l.length > 0);
+						const shown = lines.slice(-40);
+						if (shown.length > 0) t += `\n${theme.fg("muted", "out:")}`;
+						for (const line of shown) t += `\n  ${theme.fg("dim", cap(line))}`;
+						if (lines.length > shown.length) {
+							t += `\n${theme.fg("muted", `… ${lines.length - shown.length} earlier lines`)}`;
+						}
+					}
 					return new Text(t, 0, 0);
 				}
 
@@ -161,8 +174,6 @@ export default function (pi: ExtensionAPI) {
 
 				// Collapsed by default; ctrl+o expands to the full call + output
 				if (expanded) {
-					const cap = (line: string) => (line.length > 200 ? `${line.slice(0, 199)}…` : line);
-
 					const callLines = formatCallLines(context?.args, typeof diff === "string");
 					if (callLines.length > 0) {
 						t += `\n${theme.fg("muted", "call:")}`;

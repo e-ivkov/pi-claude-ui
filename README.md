@@ -2,10 +2,12 @@
 
 Claude Code–style UI for the [pi coding agent](https://github.com/earendil-works/pi):
 flat transcript, status-bullet tool indicators, prompt markers, and expandable
-call inspection — plus an optional [Catppuccin](https://catppuccin.com) Mocha theme.
+call inspection.
 
 Replaces pi's boxed tool-execution panels with compact one-line entries whose
 status lives in a colored bullet, exactly like Claude Code's `⏺` markers.
+Works with any pi theme — colors come from your theme's roles
+(`success`, `error`, `accent`, `dim`, …).
 
 ## What it looks like
 
@@ -20,9 +22,9 @@ Default (collapsed) transcript:
 ● bash (ctest -R cdb) error: 2 tests failed
 ```
 
-- `❯ ` prefixes your prompts, on a subtle background tint, so questions are
-  instantly distinguishable from answers
-- `●` bullet indicates state: **mauve** = running, **green** = success,
+- `❯ ` prefixes your prompts, so questions are instantly distinguishable from
+  answers
+- `●` bullet indicates state: **mauve** (accent) = running, **green** = success,
   **red** = failure, yellow = streaming partial output
 - Bold tool name + dim argument summary (`path`, `command`, `url`, `query`, …)
 - Smart result summaries: edit tools show `+N/−M` diff stats; others show the
@@ -67,19 +69,12 @@ pi -e npm:pi-claude-ui
 
 Reload a running session with `/reload` after installing.
 
-## Theme (optional)
+## Theme
 
-The package ships a Catppuccin Mocha theme tuned for the flat rendering:
-no background washes on tool results or user messages (just a faint tint),
-syntax colors matching the official Catppuccin Zed/Ghostty ports, and a
-thinking-level color ramp. Select it with `/settings` → Theme, or:
-
-```json
-{ "theme": "catppuccin-mocha" }
-```
-
-in `~/.pi/agent/settings.json`. The extension works with any theme; colors
-are taken from theme roles (`success`, `error`, `accent`, `dim`, …).
+Works with any pi theme (built-in `dark`/`light`, `system`, or custom) —
+status colors come from theme roles. The screenshot above pairs it with a
+[Catppuccin](https://catppuccin.com) palette; several Catppuccin ports for pi
+exist on npm, e.g. `pi install npm:pi-catppuccin-tui`.
 
 ## Keybindings
 
@@ -92,7 +87,6 @@ are taken from theme roles (`success`, `error`, `accent`, `dim`, …).
 
 - Preview caps (`40` lines), bullet glyph (`●`), and the `❯` prompt marker:
   edit `extensions/claude-status.ts`, then `/reload`
-- Tint strength: `userMessageBg` in `themes/catppuccin-mocha.json`
 
 ## Uninstall
 

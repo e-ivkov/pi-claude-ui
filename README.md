@@ -24,6 +24,9 @@ Default (collapsed) transcript:
 
 - `❯ ` prefixes your prompts, so questions are instantly distinguishable from
   answers
+- One entry per tool call: the running line settles in place when the result
+  arrives — the summary is never repeated on a second line, and streaming
+  output keeps the command visible
 - `●` bullet indicates state: **mauve** (accent) = running, **green** = success,
   **red** = failure, yellow = streaming partial output
 - Bold tool name + dim argument summary (`path`, `command`, `url`, `query`, …)

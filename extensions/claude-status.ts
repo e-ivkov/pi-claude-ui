@@ -3,11 +3,15 @@
  *
  * Replaces Pi's boxed tool-execution panels with flat lines:
  *
- *   ● bash (make -j8)                    <- running: accent bullet
- *   ● bash (make -j8) +12/−0 42 lines    <- success: green bullet
- *   ● bash (make -j8) error: exit 2      <- failure: red bullet
+ *   ● bash (make -j8)                     <- running: accent bullet
+ *   ● bash (make -j8) linking… (partial)  <- streaming: yellow bullet
+ *   ● bash (make -j8) +12/−0 42 lines     <- success: green bullet
+ *   ● bash (make -j8) error: exit 2       <- failure: red bullet
  *
- * Output appears dimmed underneath when expanded (ctrl+e).
+ * One entry per tool call: the result line replaces the call line (the
+ * summary is never repeated on a second row).
+ *
+ * Output appears dimmed underneath when expanded (ctrl+o).
  *
  * Applies to every tool via the global registerToolRenderer hook,
  * including MCP and extension tools. Disable by removing this file
@@ -53,6 +57,11 @@ function firstLine(s: string): string {
 	return s.split("\n").find((l) => l.trim()) ?? "";
 }
 
+/** Last non-empty line — the freshest output while streaming. */
+function lastLine(s: string): string {
+	return s.split("\n").filter((l) => l.trim()).pop() ?? "";
+}
+
 /** Full invocation text for the expanded view: the tool call itself. */
 function formatCallLines(args: any, hasDiff: boolean): string[] {
 	if (!args || typeof args !== "object") return [];
@@ -80,7 +89,13 @@ export default function (pi: ExtensionAPI) {
 		return {
 			renderShell: "self" as const,
 
-			renderCall(args: any, theme: any) {
+			renderCall(args: any, theme: any, context: any) {
+				// Collapse once the result line exists: it already carries the
+				// summary, so a finished call stays a single transcript entry
+				// instead of stacking "bash (cmd)" above "bash (cmd): out".
+				// renderResult sets state.hasResult and re-renders this slot.
+				if (context?.state?.hasResult) return new Text("", 0, 0);
+
 				let t = theme.fg("accent", `${BULLET} `);
 				t += theme.fg("toolTitle", theme.bold(toolName));
 				const s = argSummary(args);
@@ -91,15 +106,29 @@ export default function (pi: ExtensionAPI) {
 			renderResult(result: any, options: any, theme: any, context: any) {
 				const { expanded, isPartial } = options;
 
+				// This line replaces the call line. Remember that it exists so the
+				// next renderCall pass draws nothing, and re-render once to collapse
+				// it. Deferred (like pi's edit preview) because re-rendering
+				// mid-pass would duplicate the result row.
+				const state = context.state ?? {};
+				if (!state.hasResult) {
+					state.hasResult = true;
+					queueMicrotask(() => context.invalidate?.());
+				}
+
 				if (isPartial) {
 					let t = theme.fg("warning", `${BULLET} `);
 					t += theme.fg("toolTitle", theme.bold(toolName));
-					const streaming = oneLine(textOf(result), 70);
+					const s = argSummary(context?.args);
+					if (s) t += theme.fg("dim", ` (${s})`);
+					const streaming = oneLine(lastLine(textOf(result)), 70);
 					if (streaming) t += theme.fg("dim", ` ${streaming}`);
 					return new Text(t, 0, 0);
 				}
 
-				const isError = result?.isError === true;
+				// The TUI forwards only {content, details} here and reports errors
+				// via context.isError; the HTML export passes isError on the result.
+				const isError = result?.isError === true || context?.isError === true;
 				const output = textOf(result);
 				const statusColor = isError ? "error" : "success";
 

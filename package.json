@@ -1,6 +1,6 @@
 {
   "name": "pi-claude-ui",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Claude Code-style UI for the pi coding agent: status-bullet tool rendering, flat transcript, prompt markers, and expandable call inspection.",
   "keywords": [
     "pi-package",

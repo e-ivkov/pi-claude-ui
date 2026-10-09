@@ -1,0 +1,27 @@
+{
+  "name": "pi-claude-ui",
+  "version": "0.1.0",
+  "description": "Claude Code-style UI for the pi coding agent: status-bullet tool rendering, flat transcript, prompt markers, expandable call inspection, and an optional Catppuccin Mocha theme.",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "extension",
+    "theme",
+    "claude-code",
+    "tui"
+  ],
+  "license": "MIT",
+  "author": "Egor Ivkov <e.o.ivkov@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/e-ivkov/pi-claude-ui.git"
+  },
+  "type": "module",
+  "files": [
+    "extensions",
+    "themes",
+    "README.md",
+    "LICENSE"
+  ]
+}
